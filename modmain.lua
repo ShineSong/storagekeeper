@@ -12,6 +12,7 @@ local prefabFilter={
 	icebox= {"icebox","largeicebox"},
 	largeicebox={"icebox","largeicebox"}
 }
+local directionOfConvey={}
 local supportContainer={"treasurechest","largechest","cellar","icebox","largeicebox"}
 --- Find value in table,return the first index of v
 --
@@ -35,6 +36,20 @@ function table.clear(t)
     end
 end
 
+--- RemoveByValue only applies to array-type tables
+--
+-- @param t table input
+-- @param v value
+function table.removebyvalue(t, value)
+    if t then
+        for i,v in ipairs(t) do 
+            while v == value do
+                table.remove(t, i)
+                v = t[i]
+            end
+        end
+    end
+end
 --- Find nearby container and build adjacency List
 --
 -- @param inst center container
@@ -256,7 +271,27 @@ local function getNextAvailableStorageSlot(groupStorages,integralSlotsCount,inde
 	print("ALL FULL? Pls report this bug.")
 end
 
-local function StorageArrange(open_chest)
+local function StorageArrange(player)
+	local open_chest=nil
+	local direction=0 -- 0 : fill opened 1 : empty opened
+	
+	--determine direction
+	if directionOfConvey[player].firstSort then
+		directionOfConvey[player].firstSort=false
+	else
+		directionOfConvey[player].direction=1-directionOfConvey[player].direction
+	end
+	direction=directionOfConvey[player].direction
+	--find supported container that player opened
+	if player.components.inventory ~= nil then
+        for k,v in pairs(player.components.inventory.opencontainers) do
+        	if table.contains(supportContainer,k.prefab) then
+        		open_chest=k
+        		break
+        	end
+        end
+    end
+    
 	if open_chest == nil then
 		return
 	end
@@ -264,6 +299,20 @@ local function StorageArrange(open_chest)
 	local groupStorages = groupClusters[open_chest]
 	if groupStorages == nil then
 		return
+	end
+	-- share lock : remove occupied chest
+	for i=#groupStorages,1,-1 do
+		local v=groupStorages[i].components.container
+		if v:IsOpen() and not v:IsOpenedBy(player) then
+			table.remove(groupStorages,i)
+		end
+	end
+	if direction == 1 then
+		table.removebyvalue(groupStorages,open_chest)
+		table.insert(groupStorages,open_chest)
+	else
+		table.removebyvalue(groupStorages,open_chest)
+		table.insert(groupStorages,1,open_chest)
 	end
 	local integralSlotsCount={}
 	local firstIndex=1
@@ -378,7 +427,13 @@ local function StorageServerPostInit(inst)
 	inst:ListenForEvent("onbuilt",function()
 		reBuildAdjacencyLists()
 		end)
-
+	inst:ListenForEvent("onopen",function(inst)
+		local player=inst.components.container.opener
+		if directionOfConvey[player] == nil then
+			directionOfConvey[player] = {firstSort=true,direction=0}
+		end
+		directionOfConvey[player].firstSort=true
+		end)
 	if inst.components.workable ~= nil then
 		local oldOnfinish=inst.components.workable.onfinish
 			onhammered=function(inst, worker)
@@ -400,24 +455,19 @@ AddModRPCHandler(modname, "dsiRemoteStorageArrange", function(player,modVersion)
 		end
 		return
 	end
-	if player.components.inventory ~= nil then
-        for k,v in pairs(player.components.inventory.opencontainers) do
-        	if table.contains(supportContainer,k.prefab) then
-        		StorageArrange(k)
-        	end
-        end
-    end
+	StorageArrange(player)
 	print("Storage Sort called by ",player,chest)
 	end)
 
 --- Press "[KeyBind]" to sort your inventory.
 GLOBAL.TheInput:AddKeyDownHandler(GetModConfigData("keybind"), function()
-	print("key down")
 	if not GLOBAL.ThePlayer then
 		print("Not ThePlayer")
 		return
 	end
-
+	if GLOBAL.ThePlayer.HUD:IsConsoleScreenOpen() or GLOBAL.ThePlayer.HUD:IsChatInputScreenOpen() then
+		return
+	end
 	local modVersion       = GLOBAL.KnownModIndex:GetModInfo(modname).version
 
 	SendModRPCToServer(MOD_RPC[modname]["dsiRemoteStorageArrange"], modVersion)
