@@ -1,7 +1,7 @@
 name = "Storage Keeper"
 description = "A reliable Storage Keeper who manage your items in chests and iceboxes which are adjacent."
 author = "Shine Song"
-version = "1.1.0"
+version = "1.1.2"
 
 forumthread = "/topic/62320-mod-releasestorage-keeper"
 api_version = 10

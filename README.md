@@ -19,12 +19,16 @@ Chaos boxes is big problem when play DST with friend ,especially when you have 4
 When you sort your chest or icebox, the mod search for the nearby chest and icebox within distance(default 10).Then classify stuffs by categories,e.g. resources,tools,weapons.Next merge the stackable items which can be.Finally push all of them into storage,current opened chest have highest priority so the current container will be filled first.
 
 ## Release History
-### v1.1 13/jan/2016
+### v1.1.2 14/jan/2016
+- Fix : Turn off the debug flag
+### v1.1.1 14/jan/2016
+- Fix : Bug of If others opened one chest,the chest will be permanently removed and not be mananged.
+### v1.1.0 13/jan/2016
 - Fix : Arrangement invoked when user is chatting or using console.
 - Fix : Add share lock to prevent items lost when sorting.
 - New : Add convey direction feature,when you press sort key twice,you can change the convey direction (to fill this chest or empty it)
 
-### v1.0-rc-1 12/Jan/2016
+### v1.0.0-rc-1 12/Jan/2016
 - New : First Release
 - New : Basement feature of storage keeper
 - New : Storage Cluster by distance
