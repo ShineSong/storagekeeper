@@ -14,9 +14,6 @@ local function StorageServerPostInit(inst)
 		end)
 	inst:ListenForEvent("onopen",function(inst)
 		local player=inst.components.container.opener
-		if storagekeeper.directionOfConvey[player] == nil then
-			storagekeeper.directionOfConvey[player] = {firstSort=true,direction=0}
-		end
 		storagekeeper.directionOfConvey[player].firstSort=true
 		end)
 	if inst.components.workable ~= nil then
@@ -62,4 +59,12 @@ if GLOBAL.TheNet:GetIsServer() then
 	for _,v in ipairs(storagekeeper.supportContainer) do
 		AddPrefabPostInit(v,StorageServerPostInit)
 	end
+	AddPlayerPostInit(function(player)
+		if player then
+			print("Register player : ",player)
+			storagekeeper.directionOfConvey[player] = {firstSort=true,direction=0}
+		else
+			print("Error on player :",player)
+		end
+	end)
 end

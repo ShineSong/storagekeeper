@@ -1,7 +1,7 @@
 name = "Storage Keeper"
 description = "A reliable Storage Keeper who manage your items in chests and iceboxes which are adjacent."
 author = "Shine Song"
-version = "1.1.2"
+version = "1.1.3"
 
 forumthread = "/topic/62320-mod-releasestorage-keeper"
 api_version = 10
@@ -43,7 +43,7 @@ configuration_options = {
 		name    = "radius",
 		options = (function()
 			local values = {}
-			for i = 1, 20 do
+			for i = 1, 40 do
 				values[#values + 1] = { description = i, data = i }
 			end
 
