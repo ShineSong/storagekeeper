@@ -1,3 +1,4 @@
+local foods=require('preparedfoods')
 --- Find value in table,return the first index of v
 --
 -- @param t table
@@ -304,10 +305,10 @@ end
 -- @param inst item
 function StorageCluster:itemType(inst)
 	if inst.components.edible and inst.components.perishable then
-		if inst.components.cookable then
-			return self.BagEnum.Food
-		else
+		if table.containskey(foods,inst.prefab) then
 			return self.BagEnum.Meal
+		else
+			return self.BagEnum.Food
 		end
 	elseif inst.components.equippable then
 		if inst.components.tool then
@@ -429,7 +430,8 @@ function StorageCluster:StorageArrange(player)
 	for d=1,self.maxDepth do
 		-- Find storages in current depth
 		local clusterAtDepth={}
-		for k,v in pairs(self.managedClusters) do
+		for _,k in pairs(groupStorages) do
+			local v=self.managedClusters[k]
 			local t=v.content[d]
 			if t and v.payload ~= v.capacity then
 				if not table.containskey(clusterAtDepth,t) then clusterAtDepth[t]={} end
@@ -437,8 +439,14 @@ function StorageCluster:StorageArrange(player)
 				table.insert(storageSameType,k)
 			end
 		end
+
 		-- Fill containers with content type
 		for t,c in pairs(clusterAtDepth) do
+			--If contains opened chest ,promote it's priority.
+			if table.contains(c,open_chest) then
+				RemoveByValue(c,open_chest)
+				table.insert(c,1,open_chest)
+			end	
 			self:fillClusterWithBag(c,bags[t])
 		end
 	end
