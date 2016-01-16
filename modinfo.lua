@@ -1,7 +1,7 @@
-name = "Storage Keeper-dev"
+name = "Storage Keeper"
 author = "Shine Song"
 version = "1.2.0"
-description = name..version.."\nA reliable Storage Keeper who manage your items in chests and iceboxes which are adjacent."
+description = "v"..version.."\nA reliable keeper manages your storage clusters.You can use SignPlus to tell keeper what you want to put in this node."
 
 forumthread = "/topic/62320-mod-releasestorage-keeper"
 api_version = 10
@@ -19,7 +19,7 @@ all_clients_require_mod = true
 priority = -1 -- make it load later than DST  SignPlus
 configuration_options = {
 	{
-		default = 107,  -- ASCII code for "k"
+		default = 104,  -- ASCII code for "H"
 		label   = "Press to sort storage group:",
 		name    = "keybind",
 		options = (function()
@@ -43,7 +43,7 @@ configuration_options = {
 		name    = "radius",
 		options = (function()
 			local values = {}
-			for i = 1, 40 do
+			for i = 1, 40,3 do
 				values[#values + 1] = { description = i, data = i }
 			end
 

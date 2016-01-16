@@ -176,7 +176,8 @@ function StorageCluster:buildAdjacencyList(inst)
     end)
 end
 --- Rebuild adjacency lists for all managered storage when some are changed
-function StorageCluster:reBuildAdjacencyLists()
+function StorageCluster:rebuildAdjacencyLists()
+	print("Rebuild Adjacency Lists")
 	table.clear(self.adjaceList)
 	for k,_ in pairs(self.managedClusters) do
 		self:buildAdjacencyList(k)
@@ -204,6 +205,7 @@ end
 --- Build Group Clusters table and storage info when it's dirty
 function StorageCluster:buildGroupClusters()
 	if self.storageDirty then
+		print("Rebuild Group Clusters")
 		table.clear(self.groupClusters)
 		for k,v in pairs(self.managedClusters) do
 			local adjset=nil
@@ -362,7 +364,6 @@ function StorageCluster:fillClusterWithBag(cluster,bag)
 			local itemObj=bag[1]
 			v.components.container:GiveItem(itemObj,_storInfo.payload+i)
 			table.remove(bag,1)
-			print("Move",itemObj,"to",v)
 		end
 		_storInfo.payload=_storInfo.payload+amountToMove
 	end
@@ -416,7 +417,6 @@ function StorageCluster:StorageArrange(player)
 		for _,item in pairs(storage.slots) do
 			-- Figure out what kind of item we're dealing with.
 			local cid=self:itemType(item)
-			print(cid,item)
 			table.insert(bags[cid],item)
 			-- Detach the item from the player's inventory.
 			storage:RemoveItem(item, true)
@@ -439,7 +439,6 @@ function StorageCluster:StorageArrange(player)
 		end
 		-- Fill containers with content type
 		for t,c in pairs(clusterAtDepth) do
-			print("fill with the bag",t)
 			self:fillClusterWithBag(c,bags[t])
 		end
 	end
@@ -467,7 +466,6 @@ function StorageCluster:StorageArrange(player)
 		end	
 
 		for k,v in pairs(bags) do
-			print("fill with the bag,residual")
 			self:fillClusterWithBag(spareContainer,v)
 		end
 	end
