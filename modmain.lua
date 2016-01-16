@@ -1,5 +1,5 @@
--- GLOBAL.CHEATS_ENABLED = true
--- GLOBAL.require( 'debugkeys' )
+GLOBAL.CHEATS_ENABLED = true
+GLOBAL.require( 'debugkeys' )
 
 local require = GLOBAL.require
 local storagekeeper=require('storagecluster')()
@@ -7,25 +7,29 @@ local storagekeeper=require('storagecluster')()
 storagekeeper.searchradius=GetModConfigData("radius")
 
 local function StorageServerPostInit(inst)
-	storagekeeper:buildAdjacencyList(inst)
-	table.insert(storagekeeper.managedStorages,inst)
+	storagekeeper:registerStorage(inst)
+	-- table.insert(storagekeeper.managedStorages,inst)
 	inst:ListenForEvent("onbuilt",function()
+		storagekeeper.storageDirty=true
 		storagekeeper:reBuildAdjacencyLists()
 		end)
-	inst:ListenForEvent("onopen",function(inst)
-		local player=inst.components.container.opener
-		storagekeeper.directionOfConvey[player].firstSort=true
-		end)
+	-- inst:ListenForEvent("onopen",function(inst)
+	-- 	local player=inst.components.container.opener
+	-- 	storagekeeper.directionOfConvey[player].firstSort=true
+	-- 	end)
 	if inst.components.workable ~= nil then
 		local oldOnfinish=inst.components.workable.onfinish
 			onhammered=function(inst, worker)
 			oldOnfinish(inst,worker)
-			local itoremove=table.find(storagekeeper.managedStorages,inst)
-			table.remove(storagekeeper.managedStorages,itoremove)	
+			storagekeeper:deregisterStorage(inst)
 			storagekeeper:reBuildAdjacencyLists()
+			storagekeeper.storageDirty=true
 		end
 		inst.components.workable:SetOnFinishCallback(onhammered)
 	end
+	inst:ListenForEvent("SignPlus_IsEditing_Dirty", function(inst)
+		storagekeeper.labelDirty=true
+		end)
 end
 
 --- Inventory must be sorted server-side, so listen for a RPC.
@@ -59,12 +63,10 @@ if GLOBAL.TheNet:GetIsServer() then
 	for _,v in ipairs(storagekeeper.supportContainer) do
 		AddPrefabPostInit(v,StorageServerPostInit)
 	end
-	AddPlayerPostInit(function(player)
-		if player then
-			print("Register player : ",player)
-			storagekeeper.directionOfConvey[player] = {firstSort=true,direction=0}
-		else
-			print("Error on player :",player)
-		end
-	end)
 end
+
+GLOBAL.TheInput:AddKeyDownHandler(GLOBAL.KEY_K, function()
+	for k,v in pairs(storagekeeper.groupClusters) do
+		print(k,v)
+	end
+end)

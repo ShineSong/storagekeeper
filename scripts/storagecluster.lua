@@ -30,45 +30,155 @@ end
 
 -- Class of StorageCluster
 local StorageCluster = Class(function(self)
-	self.managedStorages={}
+	self.managedStorages={}	--obsolete
+	self.managedClusters={}
 	self.adjaceList={}
 	self.groupClusters={}
-	self.directionOfConvey={}
-	self.dirty=true
+	self.directionOfConvey={}	--obsolete
+	self.storageDirty=true
+	self.labelDirty=true
 	self.searchradius=nil
+	self.maxDepth=0
 	end)
 --constant of the class
 StorageCluster.prefabFilter={
-		treasurechest = {"treasurechest","largechest","cellar"},
-		largechest = {"treasurechest","largechest","cellar"},
-		cellar = {"treasurechest","largechest","cellar"},
-		icebox= {"icebox","largeicebox"},
-		largeicebox={"icebox","largeicebox"}
+	treasurechest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
+	largechest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
+	cellar={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
+	dragonflychest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
+	pandoraschest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
+	skullchest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
+	minotaurchest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
+	bluebox={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
+	icebox={"icebox","largeicebox","freezer","deep_freezer"},
+	largeicebox={"icebox","largeicebox","freezer","deep_freezer"},
+	freezer={"icebox","largeicebox","freezer","deep_freezer"},
+	deep_freezer={"icebox","largeicebox","freezer","deep_freezer"},
 	}
-StorageCluster.supportContainer={"treasurechest","largechest","cellar","icebox","largeicebox"}
+StorageCluster.supportContainer={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox","icebox","largeicebox","freezer","deep_freezer"}
+StorageCluster.BagEnum={Equip=1,Tool=2,ResNatu=3,ResArti=4,ResHunt=5,Food=6,Meal=7,Misc=8,Pipe=9}
+StorageCluster.resNatural={
+	"cutgrass",
+	"cutreeds",
+	"log",
+	"rocks",
+	"flint",
+	"goldnugget",
+	"twigs",
+	"nitre",
+	"poop",
+	"charcoal",
+	"ash",
+	"nightmarefuel",
+	"boneshard",
+	"dug_grass",
+	"dug_berrybush",
+	"dug_marsh_bush",
+	"dug_sapling",
+	"fireflies",
+	"moonrocknugget",
+	"foliage",
+	"mandrake",
+	}
+StorageCluster.resArtificial={
+	"rope",
+	"cutstone",
+	"papyrus",
+	"boards",
+	"gears",
+	"transistor",
+	"reviver",
+	"bandage",
+	"healingsalve",
+	"lifeinjector",
+	"compass",
+	"heatrock",
+	"wall_hay_item",
+	"wall_wood_item",
+	"wall_stone_item",
+	"wall_moonrock_item",
+	"turf_road",
+	"turf_woodfloor",
+	"turf_checkerfloor",
+	"turf_carpetfloor",
+	"turf_dragonfly",
+	"waterballoon",
+	"bedroll_straw",
+	"bernie_inactive",
+	}
+StorageCluster.resHunt={
+	"silk",
+	"spidereggsack",
+	"spidergland",
+	"houndstooth",
+	"batwing",
+	"livinglog",
+	"pigskin",
+	"stinger",
+	"trunk_summer",
+	"trunk_winter",
+	"beardhair",
+	"bearger_fur",
+	"beefalowool",
+	"feather_crow",
+	"feather_robin",
+	"feather_robin_winter",
+	"rottenegg",
+	"furtuft",
+	"goose_feather",
+	"honeycomb",
+	"lightninggoathorn",
+	"deerclops_eyeball",
+	"dragon_scales",
+	"manrabbit_tail",
+	"minotaurhorn",
+	"mosquitosack",
+	"slurper_pelt",
+	"slurtle_shellpieces",
+	"steelwool",
+	"tentaclespots",
+	"thulecite",
+	"thulecite_pieces",	
+	}
+
+---
+
+function StorageCluster:registerStorage(inst)
+	print("Register Storage ",inst)
+	self:buildAdjacencyList(inst)
+	self.managedClusters[inst]={
+		content={},
+		container=inst.components.container,
+		payload=0,
+		capacity=inst.components.container.numslots,
+		}
+end
+
+function StorageCluster:deregisterStorage(inst)
+	RemoveByValue(self.managedClusters,inst)
+end
 --- Find nearby container and build adjacency List
 --
 -- @param inst center container
 function StorageCluster:buildAdjacencyList(inst)
 	inst:DoTaskInTime(0, function()
-        local x,y,z = inst.Transform:GetWorldPosition()
-        local nearby=TheSim:FindEntities(x,y,z, self.searchradius)
-        local validNearby={}
-        for _,v in pairs(nearby) do
-        	if table.contains(self.prefabFilter[inst.prefab],v.prefab) then
-        		table.insert(validNearby,v)
-        	end
-        end
-        self.adjaceList[inst]=validNearby
+	    local x,y,z = inst.Transform:GetWorldPosition()
+	    local nearby=TheSim:FindEntities(x,y,z, self.searchradius)
+	    local validNearby={}
+	    for _,v in pairs(nearby) do
+	    	if table.contains(self.prefabFilter[inst.prefab],v.prefab) then
+	    		table.insert(validNearby,v)
+	    	end
+	    end
+	    self.adjaceList[inst]=validNearby
     end)
 end
 --- Rebuild adjacency lists for all managered storage when some are changed
 function StorageCluster:reBuildAdjacencyLists()
 	table.clear(self.adjaceList)
-	for _,v in pairs(self.managedStorages) do
-		self:buildAdjacencyList(v)
+	for k,_ in pairs(self.managedClusters) do
+		self:buildAdjacencyList(k)
 	end
-	self.dirty=true
 end
 --- build adjacency set for single container by recursion
 --
@@ -91,13 +201,42 @@ function StorageCluster:buildAdjacencySet(inst,old_set)
 end
 --- Build Group Clusters table when it's dirty
 function StorageCluster:buildGroupClusters()
-	if self.dirty then
+	if self.storageDirty then
 		table.clear(self.groupClusters)
-		for _,v in pairs(self.managedStorages) do
-			self.groupClusters[v]=self:buildAdjacencySet(v)
+		for k,v in pairs(self.managedClusters) do
+			local adjset=nil
+			-- Find the same group's set
+			for _,v in pairs(self.groupClusters) do
+				if table.contains(v,k) then
+					adjset=v
+					break
+				end
+			end
+			self.groupClusters[k]=adjset or self:buildAdjacencySet(k)
 		end
-		self.dirty=false
+		self.storageDirty=false
 	end
+
+	local _maxDepth=nil
+	for k,v in pairs(self.managedClusters) do
+		if k.components.signdata and self.labelDirty then
+			local content=v.content
+			table.clear(content)
+			local label=k.components.signdata.data.str
+			local tokens=label:split(',')
+			for _,v in ipairs(tokens) do
+				if table.containskey(self.BagEnum,v) then
+					table.insert(content,self.BagEnum[v])
+				end
+			end
+			_maxDepth=_maxDepth or 0
+			local size=table.getn(content)
+			_maxDepth= size > _maxDepth and size or _maxDepth
+		end
+		v.payload=0
+	end
+	self.maxDepth= _maxDepth or self.maxDepth
+	self.labelDirty=false
 end
 
 --- Sort and merge through the bag and return the bag
@@ -105,38 +244,25 @@ end
 -- @param bag
 -- @return sorted and merged bag
 function StorageCluster:sortBag(bag)
-	table.sort(bag.contents,function(a,b)
-		-- Sort by name then value.
-		if bag.sortBy == 'name' then
-			if a.obj.name ~= b.obj.name then
-				return a.obj.name < b.obj.name
-			end
-			return a.value > b.value
-
-		-- Sort by value then name.
-		else
-			if a.value ~= b.value then
-				return a.value > b.value
-			end
-			return a.obj.name < b.obj.name
-		end
+	table.sort(bag,function(a,b)
+		return a.name < b.name
 	end)
 	--merge stackable items
 	local k =1
-	local totalCount=#bag.contents
+	local totalCount=#bag
 	while k < totalCount do
-		local a=bag.contents[k]
-		local b=bag.contents[k+1]
-		if a.obj.name == b.obj.name and a.obj.components.stackable ~= nil then
-			if not a.obj.components.stackable:IsFull() then
-				local maxstack_a=a.obj.components.stackable.maxsize
-				local cur_stacksize_a=a.obj.components.stackable.stacksize
-				local cur_stacksize_b=b.obj.components.stackable.stacksize
+		local a=bag[k]
+		local b=bag[k+1]
+		if a.name == b.name and a.components.stackable ~= nil then
+			if not a.components.stackable:IsFull() then
+				local maxstack_a=a.components.stackable.maxsize
+				local cur_stacksize_a=a.components.stackable.stacksize
+				local cur_stacksize_b=b.components.stackable.stacksize
 				local perish_time_a = nil
                 local perish_time_b = nil
                 if a.obj.components.perishable ~= nil then
-                    perish_time_a = a.obj.components.perishable.perishremainingtime
-                    perish_time_b = b.obj.components.perishable.perishremainingtime
+                    perish_time_a = a.components.perishable.perishremainingtime
+                    perish_time_b = b.components.perishable.perishremainingtime
                 end
                 local add_a=0
                 if cur_stacksize_a + cur_stacksize_b > maxstack_a then
@@ -146,17 +272,17 @@ function StorageCluster:sortBag(bag)
                 end
                 local new_a=cur_stacksize_a+add_a
                 local new_b=cur_stacksize_b-add_a
-                a.obj.components.stackable.stacksize=new_a
-                b.obj.components.stackable.stacksize=new_b
-                if a.obj.components.perishable ~= nil then
+                a.components.stackable.stacksize=new_a
+                b.components.stackable.stacksize=new_b
+                if a.components.perishable ~= nil then
                 	--average the perish time
-                	a.obj.components.perishable.perishremainingtime=(cur_stacksize_a*perish_time_a+add_a*perish_time_b)/new_a
+                	a.components.perishable.perishremainingtime=(cur_stacksize_a*perish_time_a+add_a*perish_time_b)/new_a
                 end
                 if new_b == 0 then
-                	table.remove(bag.contents,k+1)
+                	table.remove(bag,k+1)
                 	totalCount=totalCount-1
                 else
-                	b.obj.components.stackable.stacksize=new_b
+                	b.components.stackable.stacksize=new_b
             	end
             	if new_a < maxstack_a then
             	--Let next a = current a to fill the stack
@@ -168,86 +294,39 @@ function StorageCluster:sortBag(bag)
 	end
 	return bag
 end
---- Does the item provide armour?
---
--- @param inst InventoryItem object
--- @return bool
-function StorageCluster:itemIsArmour(inst)
-	return inst.components.armor ~= nil
-end
 
---- Is the item a food for the current player?
---
--- @param inst InventoryItem object
--- @return bool
-function StorageCluster:itemIsFood(inst)
-	local itemIsGear = inst.components.edible and inst.components.edible.foodtype == FOODTYPE.GEARS
-	return inst.components.edible and (inst.components.perishable or itemIsGear)
-end
-
---- Is the item a light?
---
--- @param inst InventoryItem object
--- @return bool
-function StorageCluster:itemIsLight(inst)
-	return inst.components.lighter and inst.components.fueled
-end
-
---- Is the item a priority resource?
--- These items were manually selected from a frequency analysis of recipe components in the game
--- as of 10th March 2015. The idea is that the player will care most about having a quantity of
--- these items (because they are used commonly in item recipes), so let's sort them together.
---
--- @param inst InventoryItem object
--- @return bool
-function StorageCluster:itemIsResource(inst)
-	-- Highest frequency to lowest fequency
-	local items = {
-		"Twigs",
-		"Nightmare Fuel",
-		"Rope",
-		"Gold Nugget",
-		"Boards",
-		"Silk",
-		"Papyrus",
-		"Cut Grass",
-		"Thulecite",
-		"Cut Stone",
-		"Flint",
-		"Log",
-		"Living Log",
-		"Pig Skin",
-		"Thulecite Fragments",
-		"Rocks",
-		"Nitre",
-	}
-
-	for i = 1, #items do
-		local keys = {}
-		if items[i] == inst.name then
-			return true
+--- Detect the type of the item,we have some predefined classes.
+-- 
+-- @param inst item
+function StorageCluster:itemType(inst)
+	if inst.components.edible and inst.components.perishable then
+		if inst.components.cookable then
+			return self.BagEnum.Food
+		else
+			return self.BagEnum.Meal
 		end
+	elseif inst.components.equippable then
+		if inst.components.tool then
+			return self.BagEnum.Tool -- Tool
+		else
+			return self.BagEnum.Equip -- Equip
+		end
+	elseif not inst.prefab then
+		print("No prefab?!")
+		for k,v in pairs(inst) do
+			print(k,v)
+		end
+		return self.BagEnum.Misc
+	elseif table.contains(self.resNatural,inst.prefab) then
+		return self.BagEnum.ResNatu -- Natural Resource
+	elseif table.contains(self.resArtificial,inst.prefab) then
+		return self.BagEnum.ResArti -- Artificial Resource
+	elseif table.contains(self.resHunt,inst.prefab) then
+		return self.BagEnum.ResHunt -- Hunt Resource
+	else
+		return self.BagEnum.Misc -- Miscellaneous
 	end
-
-	return false
 end
-
---- Is the item a tool?
---
--- @param inst InventoryItem object
--- @return bool
-function StorageCluster:itemIsTool(inst)
-	return inst.components.tool and inst.components.equippable and inst.components.finiteuses
-end
-
---- Is the item a weapon?
---
--- @param inst InventoryItem object
--- @return bool
-function StorageCluster:itemIsWeapon(inst)
-	return inst.components.weapon ~= nil
-end
-
 --- Find the best slot in the storage cluster for an item. 
 --
 -- @param groupStorages table of container to search for
@@ -267,21 +346,30 @@ function StorageCluster:getNextAvailableStorageSlot(groupStorages,integralSlotsC
 	print("ALL FULL? Pls report this bug.")
 end
 
+function StorageCluster:fillClusterWithBag(cluster,_bag)
+	for _,v in ipairs(cluster) do
+		local _bagsize=table.getn(_bag)
+		local _storInfo=self.managedClusters[v]
+		local _contResid=_storInfo.capacity - _storInfo.payload
+		local amountToMove=_contResid > _bagsize and _bagsize or _contResid
+		for i=1,amountToMove do
+			local itemObj=_bag[1]
+			v.components.container:GiveItem(itemObj,_storInfo.payload+i)
+			table.remove(_bag,1)
+			print("Move",itemObj,"to",v)
+		end
+		_storInfo.payload=_storInfo.payload+amountToMove
+	end
+end
+
 function StorageCluster:StorageArrange(player)
 	local open_chest=nil
-	local direction=0 -- 0 : fill opened 1 : empty opened
 	
 	if player == nil then
 		return
 	end
-	--determine direction
-	if self.directionOfConvey[player].firstSort then
-		self.directionOfConvey[player].firstSort=false
-	else
-		self.directionOfConvey[player].direction=1-self.directionOfConvey[player].direction
-	end
-	direction=self.directionOfConvey[player].direction
-	--find supported container that player opened
+	
+	--find supported container the player opened
 	if player.components.inventory ~= nil then
         for k,v in pairs(player.components.inventory.opencontainers) do
         	if table.contains(self.supportContainer,k.prefab) then
@@ -299,116 +387,68 @@ function StorageCluster:StorageArrange(player)
 	if groupStorages == nil then
 		return
 	end
-	-- share lock : remove occupied chest
+	-- share lock : not arrange occupied chest
 	for i=#groupStorages,1,-1 do
 		local v=groupStorages[i].components.container
 		if v:IsOpen() and not v:IsOpenedBy(player) then
 			table.remove(groupStorages,i)
 		end
 	end
-	if direction == 1 then
-		RemoveByValue(groupStorages,open_chest)
-		table.insert(groupStorages,open_chest)
-	else
-		RemoveByValue(groupStorages,open_chest)
-		table.insert(groupStorages,1,open_chest)
-	end
-	local integralSlotsCount={}
-	local firstIndex=1
-	table.insert(integralSlotsCount,firstIndex)
-	for _,v in pairs(groupStorages) do
-		if v ~= open_chest then
-			v.components.container.onopenfn(v)
-		end
-		--Partition address space into seperate container
-		firstIndex=firstIndex+v.components.container.numslots
-		table.insert(integralSlotsCount,firstIndex)
-	end
 
-	local armourBag    = { contents = {}, sortBy = 'value', type = 'armour' }
-	local foodBag      = { contents = {}, sortBy = 'value', type = 'food' }
-	local lightBag     = { contents = {}, sortBy = 'value', type = 'light' }
-	local miscBag      = { contents = {}, sortBy = 'name',  type = 'misc' }
-	local resourceBag  = { contents = {}, sortBy = 'name',  type = 'resources' }
-	local toolBag      = { contents = {}, sortBy = 'name',  type = 'tools' }
-	local weaponBag    = { contents = {}, sortBy = 'value', type = 'weapons' }
+	local bags={}
+	for _,v in pairs(self.BagEnum) do
+		bags[v]={}
+	end
 
 	for _,s in pairs(groupStorages) do
 		local storage=s.components.container
 		for _,item in pairs(storage.slots) do
 			-- Figure out what kind of item we're dealing with.
-			if item then
-				local bag  = miscBag
-				local sort = 0
-
-				-- Armour (chest and head)
-				if self:itemIsArmour(item) then
-					bag  = armourBag
-					sort = item.components.armor:GetPercent()
-
-				-- Food
-				elseif self:itemIsFood(item) then
-					bag  = foodBag
-					sort = item.components.edible.hungervalue
-
-				-- Light
-				elseif self:itemIsLight(item) then
-					bag  = lightBag
-					sort = item.components.fueled:GetPercent()
-				-- Priority resources
-				elseif self:itemIsResource(item) then
-					bag = resourceBag
-
-				-- Tools
-				elseif self:itemIsTool(item) then
-					bag  = toolBag
-					sort = item.components.finiteuses:GetUses()
-
-				-- Weapons (MUST be below the tools block)
-				elseif self:itemIsWeapon(item) then
-					bag  = weaponBag
-					sort = item.components.weapon.damage
-				end
-
-
-				table.insert(bag.contents, {
-					obj   = item,
-					value = sort
-				})
-			end
-
+			local cid=self:itemType(item)
+			print(cid,item)
+			table.insert(bags[cid],item)
 			-- Detach the item from the player's inventory.
 			storage:RemoveItem(item, true)
 		end
 	end
 	
-	--[[Sorry,I adjust this Hat]]
-	local sortingHat = {
-		foodBag,
-		resourceBag,
-		miscBag,
-		lightBag,
-		toolBag,
-		weaponBag,
-		armourBag,
-	}
-
-
-	-- Sort the categorised items.
-	local currentIndex=0
-	for i = 1, #sortingHat do
-		local bag = self:sortBag(sortingHat[i])
-		for _, c in ipairs(bag.contents) do
-			currentIndex=currentIndex+1
-			local itemObj       = c.obj
-			-- Put the item in its sorted slot/container.
-			local container,slot = self:getNextAvailableStorageSlot(groupStorages,integralSlotsCount,currentIndex)
-			container:GiveItem(itemObj,slot)
+	-- Fill containers typed with label layer by layer.
+	for d=1,self.maxDepth do
+		-- Find storages in current depth
+		local clusterAtDepth={}
+		for k,v in pairs(self.managedClusters) do
+			local t=v.content[d]
+			if t and v.payload ~= v.capacity then
+				if not table.containskey(clusterAtDepth,t) then clusterAtDepth[t]={} end
+				local storageSameType=clusterAtDepth[t]
+				table.insert(storageSameType,k)
+			end
+		end
+		-- Fill containers with content type
+		for t,c in pairs(clusterAtDepth) do
+			print("fill with the bag",t)
+			self:fillClusterWithBag(c,bags[t])
 		end
 	end
-	for _,v in pairs(groupStorages) do
-		if v ~= open_chest then
-			v.components.container.onclosefn(v)
+	
+	local residualOfItems=0
+	for _,v in ipairs(bags) do
+		residualOfItems=residualOfItems+table.getn(v)
+	end
+
+	if residualOfItems > 0 then
+		-- Fill items remain in bags to spare space. Pipe type with lowest priority
+		local spareContainer={}
+		for k,v in pairs(self.managedClusters) do
+			if v.payload < v.capacity and table.contains(v.content,self.BagEnum.Pipe) then
+				table.insert(spareContainer,k)
+			else
+				table.insert(spareContainer,1,k)
+			end
+		end
+		for k,v in pairs(bags) do
+			print("fill with the bag,residual")
+			self:fillClusterWithBag(spareContainer,v)
 		end
 	end
 end

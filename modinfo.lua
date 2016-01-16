@@ -1,7 +1,7 @@
-name = "Storage Keeper"
-description = "A reliable Storage Keeper who manage your items in chests and iceboxes which are adjacent."
+name = "Storage Keeper-dev"
 author = "Shine Song"
-version = "1.1.3"
+version = "1.2.0"
+description = name..version.."\nA reliable Storage Keeper who manage your items in chests and iceboxes which are adjacent."
 
 forumthread = "/topic/62320-mod-releasestorage-keeper"
 api_version = 10
@@ -16,7 +16,7 @@ server_filter_tags         = { "storage keeper" }
 
 client_only_mod         = false
 all_clients_require_mod = true
-
+priority = -1 -- make it load later than DST  SignPlus
 configuration_options = {
 	{
 		default = 107,  -- ASCII code for "k"
