@@ -22,8 +22,8 @@ local function StorageServerPostInit(inst)
 			onhammered=function(inst, worker)
 			oldOnfinish(inst,worker)
 			storagekeeper:deregisterStorage(inst)
-			storagekeeper:reBuildAdjacencyLists()
 			storagekeeper.storageDirty=true
+			storagekeeper:reBuildAdjacencyLists()
 		end
 		inst.components.workable:SetOnFinishCallback(onhammered)
 	end

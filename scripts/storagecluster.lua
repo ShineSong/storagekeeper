@@ -30,11 +30,9 @@ end
 
 -- Class of StorageCluster
 local StorageCluster = Class(function(self)
-	self.managedStorages={}	--obsolete
 	self.managedClusters={}
 	self.adjaceList={}
 	self.groupClusters={}
-	self.directionOfConvey={}	--obsolete
 	self.storageDirty=true
 	self.labelDirty=true
 	self.searchradius=nil
@@ -141,8 +139,9 @@ StorageCluster.resHunt={
 	"thulecite_pieces",	
 	}
 
----
-
+--- Register container to keeper after it init
+--
+-- @param inst the container
 function StorageCluster:registerStorage(inst)
 	print("Register Storage ",inst)
 	self:buildAdjacencyList(inst)
@@ -154,8 +153,11 @@ function StorageCluster:registerStorage(inst)
 		}
 end
 
+--- Deregister container from keeper
+--
+-- @param inst the container
 function StorageCluster:deregisterStorage(inst)
-	RemoveByValue(self.managedClusters,inst)
+	self.managedClusters[inst]=nil
 end
 --- Find nearby container and build adjacency List
 --
@@ -199,7 +201,7 @@ function StorageCluster:buildAdjacencySet(inst,old_set)
 	end
 	return old_set
 end
---- Build Group Clusters table when it's dirty
+--- Build Group Clusters table and storage info when it's dirty
 function StorageCluster:buildGroupClusters()
 	if self.storageDirty then
 		table.clear(self.groupClusters)
@@ -260,7 +262,7 @@ function StorageCluster:sortBag(bag)
 				local cur_stacksize_b=b.components.stackable.stacksize
 				local perish_time_a = nil
                 local perish_time_b = nil
-                if a.obj.components.perishable ~= nil then
+                if a.components.perishable ~= nil then
                     perish_time_a = a.components.perishable.perishremainingtime
                     perish_time_b = b.components.perishable.perishremainingtime
                 end
@@ -346,22 +348,29 @@ function StorageCluster:getNextAvailableStorageSlot(groupStorages,integralSlotsC
 	print("ALL FULL? Pls report this bug.")
 end
 
-function StorageCluster:fillClusterWithBag(cluster,_bag)
+--- Fill Cluster with current bag
+--
+-- @param cluster
+-- @param bag
+function StorageCluster:fillClusterWithBag(cluster,bag)
 	for _,v in ipairs(cluster) do
-		local _bagsize=table.getn(_bag)
+		local _bagsize=table.getn(bag)
 		local _storInfo=self.managedClusters[v]
 		local _contResid=_storInfo.capacity - _storInfo.payload
 		local amountToMove=_contResid > _bagsize and _bagsize or _contResid
 		for i=1,amountToMove do
-			local itemObj=_bag[1]
+			local itemObj=bag[1]
 			v.components.container:GiveItem(itemObj,_storInfo.payload+i)
-			table.remove(_bag,1)
+			table.remove(bag,1)
 			print("Move",itemObj,"to",v)
 		end
 		_storInfo.payload=_storInfo.payload+amountToMove
 	end
 end
 
+--- Arrange the items in cluster which contains current opened container
+--
+-- @param player
 function StorageCluster:StorageArrange(player)
 	local open_chest=nil
 	
@@ -392,6 +401,8 @@ function StorageCluster:StorageArrange(player)
 		local v=groupStorages[i].components.container
 		if v:IsOpen() and not v:IsOpenedBy(player) then
 			table.remove(groupStorages,i)
+		else
+			v.onopenfn(groupStorages[i])
 		end
 	end
 
@@ -411,7 +422,9 @@ function StorageCluster:StorageArrange(player)
 			storage:RemoveItem(item, true)
 		end
 	end
-	
+	for k,v in pairs(bags) do 
+		bags[k]=self:sortBag(v)
+	end
 	-- Fill containers typed with label layer by layer.
 	for d=1,self.maxDepth do
 		-- Find storages in current depth
@@ -446,9 +459,22 @@ function StorageCluster:StorageArrange(player)
 				table.insert(spareContainer,1,k)
 			end
 		end
+		--If opened chest without pipe type ,promote it's priority.
+		if table.contains(spareContainer,open_chest) and
+			not table.contains(self.managedClusters[open_chest].content,self.BagEnum.Pipe) then
+			RemoveByValue(spareContainer,open_chest)
+			table.insert(spareContainer,1,open_chest)
+		end	
+
 		for k,v in pairs(bags) do
 			print("fill with the bag,residual")
 			self:fillClusterWithBag(spareContainer,v)
+		end
+	end
+
+	for _,v in pairs(groupStorages) do
+		if v ~= open_chest then
+			v.components.container.onclosefn(v)
 		end
 	end
 end
