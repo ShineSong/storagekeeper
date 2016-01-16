@@ -459,7 +459,8 @@ function StorageCluster:StorageArrange(player)
 	if residualOfItems > 0 then
 		-- Fill items remain in bags to spare space. Pipe type with lowest priority
 		local spareContainer={}
-		for k,v in pairs(self.managedClusters) do
+		for _,k in pairs(groupStorages) do
+			local v=self.managedClusters[k]
 			if v.payload < v.capacity and table.contains(v.content,self.BagEnum.Pipe) then
 				table.insert(spareContainer,k)
 			else

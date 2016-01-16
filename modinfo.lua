@@ -1,6 +1,6 @@
 name = "Storage Keeper"
 author = "Shine Song"
-version = "1.2.2"
+version = "1.2.3"
 description = "v"..version.."\nA reliable keeper manages your storage clusters.You can use SignPlus to tell keeper what you want to put in this node."
 
 forumthread = "/topic/62320-mod-releasestorage-keeper"
