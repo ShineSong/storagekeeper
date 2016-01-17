@@ -1,6 +1,6 @@
 name = "Storage Keeper"
 author = "Shine Song"
-version = "1.2.3"
+version = "1.2.4"
 description = "v"..version.."\nA reliable keeper manages your storage clusters.You can use SignPlus to tell keeper what you want to put in this node."
 
 forumthread = "/topic/62320-mod-releasestorage-keeper"
@@ -43,10 +43,25 @@ configuration_options = {
 		name    = "radius",
 		options = (function()
 			local values = {}
-			for i = 1, 40,3 do
+			for i = 1, 31,3 do
 				values[#values + 1] = { description = i, data = i }
 			end
 
+			for i=38,108,7 do
+				values[#values + 1] = { description = i, data = i }
+			end
+
+			for i=118,218,10 do
+				values[#values + 1] = { description = i, data = i }
+			end
+
+			for i=233,383,15 do
+				values[#values + 1] = { description = i, data = i }
+			end
+
+			for i=403,603,20 do
+				values[#values + 1] = { description = i, data = i }
+			end
 			return values
 		end)()
 	},

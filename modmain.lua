@@ -5,7 +5,7 @@ local require = GLOBAL.require
 local storagekeeper=require('storagecluster')()
 
 storagekeeper.searchradius=GetModConfigData("radius")
-
+print("Cluster Radius : ",storagekeeper.searchradius)
 local function StorageServerPostInit(inst)
 	storagekeeper:registerStorage(inst)
 	inst:ListenForEvent("onbuilt",function()

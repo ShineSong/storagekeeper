@@ -166,7 +166,7 @@ end
 function StorageCluster:buildAdjacencyList(inst)
 	inst:DoTaskInTime(0, function()
 	    local x,y,z = inst.Transform:GetWorldPosition()
-	    local nearby=TheSim:FindEntities(x,y,z, self.searchradius)
+	    local nearby=TheSim:FindEntities(x,y,z, self.searchradius,{"structure"})
 	    local validNearby={}
 	    for _,v in pairs(nearby) do
 	    	if table.contains(self.prefabFilter[inst.prefab],v.prefab) then
