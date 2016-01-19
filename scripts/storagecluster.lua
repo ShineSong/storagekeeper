@@ -38,6 +38,7 @@ local StorageCluster = Class(function(self)
 	self.labelDirty=true
 	self.searchradius=nil
 	self.maxDepth=0
+	self.isRunning=false
 	end)
 --constant of the class
 StorageCluster.prefabFilter={
@@ -55,7 +56,7 @@ StorageCluster.prefabFilter={
 	deep_freezer={"icebox","largeicebox","freezer","deep_freezer"},
 	}
 StorageCluster.supportContainer={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox","icebox","largeicebox","freezer","deep_freezer"}
-StorageCluster.BagEnum={Equip=1,Tool=2,ResNatu=3,ResArti=4,ResHunt=5,Food=6,Meal=7,Misc=8,Pipe=9}
+StorageCluster.BagEnum={ResNatu=1,ResN=1,ResArti=2,ResA=2,ResHunt=3,ResH=3,Equip=4,Tool=5,Food=6,Meal=7,Misc=8,Pipe=9,A=10}
 StorageCluster.resNatural={
 	"cutgrass",
 	"cutreeds",
@@ -151,6 +152,7 @@ function StorageCluster:registerStorage(inst)
 		container=inst.components.container,
 		payload=0,
 		capacity=inst.components.container.numslots,
+		autoarrange=false,
 		}
 end
 
@@ -229,9 +231,13 @@ function StorageCluster:buildGroupClusters()
 			table.clear(content)
 			local label=k.components.signdata.data.str
 			local tokens=label:split(',')
-			for _,v in ipairs(tokens) do
-				if table.containskey(self.BagEnum,v) then
-					table.insert(content,self.BagEnum[v])
+			for _,val in ipairs(tokens) do
+				if table.containskey(self.BagEnum,val) then
+					if val=='A' then
+						v.autoarrange=true
+					else
+						table.insert(content,self.BagEnum[val])
+					end
 				end
 			end
 			_maxDepth=_maxDepth or 0
@@ -373,10 +379,12 @@ end
 --- Arrange the items in cluster which contains current opened container
 --
 -- @param player
-function StorageCluster:StorageArrange(player)
+function StorageCluster:StorageArrange(player,itemget)
+	self.isRunning=true
 	local open_chest=nil
 	
 	if player == nil then
+		self.isRunning=false
 		return
 	end
 	
@@ -391,11 +399,25 @@ function StorageCluster:StorageArrange(player)
     end
     
 	if open_chest == nil then
+		self.isRunning=false
 		return
 	end
 	self:buildGroupClusters()
+	-- TODO not complete
+	-- -- Auto arrange when flag is set.
+	-- if itemget then
+	-- 	print("From Item Get",open_chest,self.managedClusters[open_chest].autoarrange)
+	-- 	if self.managedClusters[open_chest].autoarrange then
+	-- 	print("Storage Sort called by Item Get Event")
+	-- 	else
+	-- 		self.isRunning=false
+	-- 		return
+	-- 	end
+	-- end
+
 	local groupStorages = cloneTable(self.groupClusters[open_chest])
 	if groupStorages == nil then
+		self.isRunning=false
 		return
 	end
 	-- share lock : not arrange occupied chest
@@ -484,6 +506,7 @@ function StorageCluster:StorageArrange(player)
 			v.components.container.onclosefn(v)
 		end
 	end
+	self.isRunning=false
 end
 
 return StorageCluster
