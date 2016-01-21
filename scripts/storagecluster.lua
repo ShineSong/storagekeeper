@@ -168,7 +168,7 @@ end
 function StorageCluster:buildAdjacencyList(inst)
 	inst:DoTaskInTime(0, function()
 	    local x,y,z = inst.Transform:GetWorldPosition()
-	    local nearby=TheSim:FindEntities(x,y,z, self.searchradius,{"structure"})
+	    local nearby=TheSim:FindEntities(x,y,z, self.searchradius)
 	    local validNearby={}
 	    for _,v in pairs(nearby) do
 	    	if table.contains(self.prefabFilter[inst.prefab],v.prefab) then
@@ -403,18 +403,7 @@ function StorageCluster:StorageArrange(player,itemget)
 		return
 	end
 	self:buildGroupClusters()
-	-- TODO not complete
-	-- -- Auto arrange when flag is set.
-	-- if itemget then
-	-- 	print("From Item Get",open_chest,self.managedClusters[open_chest].autoarrange)
-	-- 	if self.managedClusters[open_chest].autoarrange then
-	-- 	print("Storage Sort called by Item Get Event")
-	-- 	else
-	-- 		self.isRunning=false
-	-- 		return
-	-- 	end
-	-- end
-
+	
 	local groupStorages = cloneTable(self.groupClusters[open_chest])
 	if groupStorages == nil then
 		self.isRunning=false

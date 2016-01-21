@@ -30,6 +30,10 @@ Chaos boxes is big problem when play DST with friend ,especially when you have 4
 When you sort your chest or icebox, the mod search for the nearby chest and icebox within distance(default 10).Then classify stuffs by categories,e.g. resources,tools,weapons.Next merge the stackable items which can be.Finally push all of them into storage,current opened chest have highest priority so the current container will be filled first.
 
 ## Release History
+### v1.2.5 21/Jan/2016
+- Add : Alias of content type.ResA,ResN,ResH.
+- Fix : Stormcellar cannot be arranged.
+
 ### v1.2.4 18/Jan/2016
 - Change : Enlarge the upper bound and default value of radius. 
 

@@ -1,5 +1,5 @@
-GLOBAL.CHEATS_ENABLED = true
-GLOBAL.require( 'debugkeys' )
+-- GLOBAL.CHEATS_ENABLED = true
+-- GLOBAL.require( 'debugkeys' )
 
 local require = GLOBAL.require
 local storagekeeper=require('storagecluster')()
@@ -22,14 +22,6 @@ local function StorageServerPostInit(inst)
 		end
 		inst.components.workable:SetOnFinishCallback(onhammered)
 	end
-	-- inst:ListenForEvent("itemget",function(inst,in_slot,item,src_pos)
-	-- 	if not storagekeeper.isRunning then
-	-- 		local player=inst.components.container.opener
-	-- 		if player then
-	-- 			storagekeeper:StorageArrange(player,true)
-	-- 		end
-	-- 	end
-	-- 	end)
 	inst:ListenForEvent("SignPlus_IsEditing_Dirty", function(inst)
 		storagekeeper.labelDirty=true
 		end)
