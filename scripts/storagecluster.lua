@@ -56,7 +56,8 @@ StorageCluster.prefabFilter={
 	deep_freezer={"icebox","largeicebox","freezer","deep_freezer"},
 	}
 StorageCluster.supportContainer={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox","icebox","largeicebox","freezer","deep_freezer"}
-StorageCluster.BagEnum={ResNatu=1,ResN=1,ResArti=2,ResA=2,ResHunt=3,ResH=3,Equip=4,Tool=5,Food=6,Meal=7,Misc=8,Pipe=9,A=10}
+StorageCluster.BagEnum={Gen=1,Meat=2,Veg=3,Seed=4,ResNatu=5,ResN=5,ResArti=6,ResA=6,ResHunt=7,ResH=7,Equip=8,Tool=9,Meal=10,Misc=11,Res=51,Food=52,Pipe=98,A=99}
+StorageCluster.MaxLeafBag=50
 StorageCluster.resNatural={
 	"cutgrass",
 	"cutreeds",
@@ -313,8 +314,16 @@ function StorageCluster:itemType(inst)
 	if inst.components.edible and inst.components.perishable then
 		if table.containskey(foods,inst.prefab) then
 			return self.BagEnum.Meal
+		elseif inst.components.edible.foodtype == FOODTYPE.VEGGIE then
+			return self.BagEnum.Veg
+		elseif inst.components.edible.foodtype == FOODTYPE.MEAT then
+			return self.BagEnum.Meat
+		elseif inst.components.edible.foodtype == FOODTYPE.SEEDS then
+			return self.BagEnum.Seed
+		elseif inst.components.edible.foodtype == FOODTYPE.GENERIC then
+			return self.BagEnum.Gen
 		else
-			return self.BagEnum.Food
+			return self.BagEnum.Misc
 		end
 	elseif inst.components.equippable then
 		if inst.components.tool then
@@ -421,7 +430,9 @@ function StorageCluster:StorageArrange(player,itemget)
 
 	local bags={}
 	for _,v in pairs(self.BagEnum) do
-		bags[v]={}
+		if v < self.MaxLeafBag then
+			bags[v]={}
+		end
 	end
 
 	for _,s in pairs(groupStorages) do
@@ -437,6 +448,30 @@ function StorageCluster:StorageArrange(player,itemget)
 	for k,v in pairs(bags) do 
 		bags[k]=self:sortBag(v)
 	end
+
+	-- Build Class tree
+	local tree={}
+	tree[self.BagEnum.Res]={hasChild=true,data={}}
+	tree[self.BagEnum.ResNatu]={hasChild=false,data=bags[self.BagEnum.ResNatu]}
+	tree[self.BagEnum.ResArti]={hasChild=false,data=bags[self.BagEnum.ResArti]}
+	tree[self.BagEnum.ResHunt]={hasChild=false,data=bags[self.BagEnum.ResHunt]}
+	tree[self.BagEnum.Res].data[self.BagEnum.ResNatu]={hasChild=false,data=bags[self.BagEnum.ResNatu]}
+	tree[self.BagEnum.Res].data[self.BagEnum.ResArti]={hasChild=false,data=bags[self.BagEnum.ResArti]}
+	tree[self.BagEnum.Res].data[self.BagEnum.ResHunt]={hasChild=false,data=bags[self.BagEnum.ResHunt]}
+	tree[self.BagEnum.Equip]={hasChild=false,data=bags[self.BagEnum.Equip]}
+	tree[self.BagEnum.Tool]={hasChild=false,data=bags[self.BagEnum.Tool]}
+	tree[self.BagEnum.Food]={hasChild=true,data={}}
+	tree[self.BagEnum.Meat]={hasChild=false,data=bags[self.BagEnum.Meat]}
+	tree[self.BagEnum.Veg]={hasChild=false,data=bags[self.BagEnum.Veg]}
+	tree[self.BagEnum.Gen]={hasChild=false,data=bags[self.BagEnum.Gen]}
+	tree[self.BagEnum.Seed]={hasChild=false,data=bags[self.BagEnum.Seed]}
+	tree[self.BagEnum.Food].data[self.BagEnum.Meat]={hasChild=false,data=bags[self.BagEnum.Meat]}	
+	tree[self.BagEnum.Food].data[self.BagEnum.Veg]={hasChild=false,data=bags[self.BagEnum.Veg]}
+	tree[self.BagEnum.Food].data[self.BagEnum.Gen]={hasChild=false,data=bags[self.BagEnum.Gen]}
+	tree[self.BagEnum.Food].data[self.BagEnum.Seed]={hasChild=false,data=bags[self.BagEnum.Seed]}
+	tree[self.BagEnum.Meal]={hasChild=false,data=bags[self.BagEnum.Meal]}
+	tree[self.BagEnum.Misc]={hasChild=false,data=bags[self.BagEnum.Misc]}
+
 	-- Fill containers typed with label layer by layer.
 	for d=1,self.maxDepth do
 		-- Find storages in current depth
@@ -458,12 +493,18 @@ function StorageCluster:StorageArrange(player,itemget)
 				RemoveByValue(c,open_chest)
 				table.insert(c,1,open_chest)
 			end	
-			self:fillClusterWithBag(c,bags[t])
+			if tree[t].hasChild then
+				for _,subbag in pairs(tree[t].data) do
+					self:fillClusterWithBag(c,subbag.data)
+				end
+			else
+				self:fillClusterWithBag(c,tree[t].data)
+			end
 		end
 	end
 	
 	local residualOfItems=0
-	for _,v in ipairs(bags) do
+	for t,v in ipairs(bags) do
 		residualOfItems=residualOfItems+table.getn(v)
 	end
 

@@ -6,14 +6,19 @@ A mod of [Don't Starve Together](http://dontstarvetogether.com/) .It's a reliabl
 ## Usage
 Press `H` (default key) to sort items in your container automatically.
 
-You can indicate what types of item should be put in the storage node.Use mod [DST-SignPlus](http://steamcommunity.com/sharedfiles/filedetails/?id=553665029) add label to chest.Label should contains these words with case sensitive:`Equip,Tool,ResNatu,ResArti,ResHunt,Food,Meal,Misc,Pipe`.If you want to designate multi type,please use comma as separater.
+You can indicate what types of item should be put in the storage node.Use mod [DST-SignPlus](http://steamcommunity.com/sharedfiles/filedetails/?id=553665029) add label to chest.Label should contains these words with case sensitive:`Equip,Tool,Res,ResNatu or,ResN,ResArti,ResA,ResHunt,ResH,Food,Gen,Meat,Veg,Seed,Meal,Misc,Pipe`.If you want to designate multi type,please use comma as separater.Or you can use grouped types `Res` and `Food` which equal to `ResNatu,ResArti,ResHunt` and `Gen,Meat,Veg,Seed`.
   
 1. Equip(clothes,armor,weapons)
 2. Tool(Hammer,shaver,etc.)
-3. ResNatu(cutgrass,log,rocks,flint,twigs,grass,bush,poop,etc.)
-4. ResArti(cutstone,boards,rope,etc.)
-5. ResHunt(beefalowool,horn,silk,spidergland,etc.)
+3. Res (Resources,include three subtypes)
+	1. ResNatu(cutgrass,log,rocks,flint,twigs,grass,bush,poop,etc.)
+	2. ResArti(cutstone,boards,rope,etc.)
+	3. ResHunt(beefalowool,horn,silk,spidergland,etc.)
 6. Food(cookable and perishable)
+	1. Gen(Ice,honey)
+	2. Meat
+	3. Veg
+	4. Seed
 7. Meal(meatball,fried fish,etc.)
 8. Misc(toys,gems)
 9. Pipe(lowest priority,often act as pipe to connection other storage nodes.)
@@ -30,6 +35,10 @@ Chaos boxes is big problem when play DST with friend ,especially when you have 4
 When you sort your chest or icebox, the mod search for the nearby chest and icebox within distance(default 10).Then classify stuffs by categories,e.g. resources,tools,weapons.Next merge the stackable items which can be.Finally push all of them into storage,current opened chest have highest priority so the current container will be filled first.
 
 ## Release History
+### v1.2.6 28/Jan/2016
+- Add : More detail food types,Meat,Seed,Veg,Gen.
+- Add : Grouped label:Food,Res.
+
 ### v1.2.5 21/Jan/2016
 - Add : Alias of content type.ResA,ResN,ResH.
 - Fix : Stormcellar cannot be arranged.
