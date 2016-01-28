@@ -1,6 +1,6 @@
 name = "Storage Keeper"
 author = "Shine Song"
-version = "1.2.6"
+version = "1.2.7"
 description = "v"..version.."\nA reliable keeper manages your storage clusters.You can use SignPlus to tell keeper what you want to put in this node."
 
 forumthread = "/topic/62320-mod-releasestorage-keeper"
@@ -8,9 +8,9 @@ api_version = 10
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
 restart_required = false
-dont_starve_compatible = false
-reign_of_giants_compatible = false
-shipwrecked_compatible = false
+dont_starve_compatible = true
+reign_of_giants_compatible = true
+shipwrecked_compatible = true
 dst_compatible             = true
 server_filter_tags         = { "storage keeper" }
 

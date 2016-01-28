@@ -39,6 +39,7 @@ local StorageCluster = Class(function(self)
 	self.searchradius=nil
 	self.maxDepth=0
 	self.isRunning=false
+	self.DST=true
 	end)
 --constant of the class
 StorageCluster.prefabFilter={
@@ -421,7 +422,7 @@ function StorageCluster:StorageArrange(player,itemget)
 	-- share lock : not arrange occupied chest
 	for i=#groupStorages,1,-1 do
 		local v=groupStorages[i].components.container
-		if v:IsOpen() and not v:IsOpenedBy(player) then
+		if self.DST and v:IsOpen() and not v:IsOpenedBy(player) then
 			table.remove(groupStorages,i)
 		else
 			v.onopenfn(groupStorages[i])

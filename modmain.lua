@@ -27,35 +27,50 @@ local function StorageServerPostInit(inst)
 		end)
 end
 
---- Inventory must be sorted server-side, so listen for a RPC.
-AddModRPCHandler(modname, "dsiRemoteStorageArrange", function(player,modVersion)
-	if modVersion ~= GLOBAL.KnownModIndex:GetModInfo(modname).version then
-		print("Client Version:",modVersion,"not compatible with Server:",GLOBAL.KnownModIndex:GetModInfo(modname).version)
-		if player.components.talker then
-			player.components.talker:Say("I Need Update Storage Keeper")
-		end
-		return
-	end
-	storagekeeper:StorageArrange(player)
-	print("Storage Sort called by ",player,chest)
+if GLOBAL.MOD_API_VERSION == 6 then
+-- DS Version
+	storagekeeper.DST=false
+	--- Press "[KeyBind]" to sort your inventory.
+	GLOBAL.TheInput:AddKeyDownHandler(GetModConfigData("keybind"), function()
+		print("player:",GLOBAL.GetPlayer())
+		storagekeeper:StorageArrange(GLOBAL.GetPlayer())
 	end)
 
---- Press "[KeyBind]" to sort your inventory.
-GLOBAL.TheInput:AddKeyDownHandler(GetModConfigData("keybind"), function()
-	if not GLOBAL.ThePlayer then
-		print("Not ThePlayer")
-		return
-	end
-	if GLOBAL.ThePlayer.HUD:IsConsoleScreenOpen() or GLOBAL.ThePlayer.HUD:IsChatInputScreenOpen() then
-		return
-	end
-	local modVersion       = GLOBAL.KnownModIndex:GetModInfo(modname).version
-
-	SendModRPCToServer(MOD_RPC[modname]["dsiRemoteStorageArrange"], modVersion)
-end)
-
-if GLOBAL.TheNet:GetIsServer() then
 	for _,v in ipairs(storagekeeper.supportContainer) do
 		AddPrefabPostInit(v,StorageServerPostInit)
+	end
+else
+--DST Version
+	--- Inventory must be sorted server-side, so listen for a RPC.
+	AddModRPCHandler(modname, "dsiRemoteStorageArrange", function(player,modVersion)
+		if modVersion ~= GLOBAL.KnownModIndex:GetModInfo(modname).version then
+			print("Client Version:",modVersion,"not compatible with Server:",GLOBAL.KnownModIndex:GetModInfo(modname).version)
+			if player.components.talker then
+				player.components.talker:Say("I Need Update Storage Keeper")
+			end
+			return
+		end
+		storagekeeper:StorageArrange(player)
+		print("Storage Sort called by ",player,chest)
+		end)
+
+	--- Press "[KeyBind]" to sort your inventory.
+	GLOBAL.TheInput:AddKeyDownHandler(GetModConfigData("keybind"), function()
+		if not GLOBAL.ThePlayer then
+			print("Not ThePlayer")
+			return
+		end
+		if GLOBAL.ThePlayer.HUD:IsConsoleScreenOpen() or GLOBAL.ThePlayer.HUD:IsChatInputScreenOpen() then
+			return
+		end
+		local modVersion       = GLOBAL.KnownModIndex:GetModInfo(modname).version
+
+		SendModRPCToServer(MOD_RPC[modname]["dsiRemoteStorageArrange"], modVersion)
+	end)
+
+	if GLOBAL.TheNet:GetIsServer() then
+		for _,v in ipairs(storagekeeper.supportContainer) do
+			AddPrefabPostInit(v,StorageServerPostInit)
+		end
 	end
 end
