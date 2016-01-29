@@ -319,7 +319,7 @@ function StorageCluster:itemType(inst)
 			return self.BagEnum.Veg
 		elseif inst.components.edible.foodtype == FOODTYPE.MEAT then
 			return self.BagEnum.Meat
-		elseif inst.components.edible.foodtype == FOODTYPE.SEEDS then
+		elseif inst.components.edible.foodtype == FOODTYPE.SEEDS or inst.components.edible.foodtype == FOODTYPE.RAW then
 			return self.BagEnum.Seed
 		elseif inst.components.edible.foodtype == FOODTYPE.GENERIC then
 			return self.BagEnum.Gen
@@ -472,7 +472,7 @@ function StorageCluster:StorageArrange(player,itemget)
 	tree[self.BagEnum.Food].data[self.BagEnum.Seed]={hasChild=false,data=bags[self.BagEnum.Seed]}
 	tree[self.BagEnum.Meal]={hasChild=false,data=bags[self.BagEnum.Meal]}
 	tree[self.BagEnum.Misc]={hasChild=false,data=bags[self.BagEnum.Misc]}
-
+	tree[self.BagEnum.Pipe]={hasChild=false,data={}}
 	-- Fill containers typed with label layer by layer.
 	for d=1,self.maxDepth do
 		-- Find storages in current depth

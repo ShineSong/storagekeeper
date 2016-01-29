@@ -11,17 +11,17 @@ You can indicate what types of item should be put in the storage node.Use mod [D
 1. Equip(clothes,armor,weapons)
 2. Tool(Hammer,shaver,etc.)
 3. Res (Resources,include three subtypes)
-	1. ResNatu(cutgrass,log,rocks,flint,twigs,grass,bush,poop,etc.)
-	2. ResArti(cutstone,boards,rope,etc.)
-	3. ResHunt(beefalowool,horn,silk,spidergland,etc.)
-6. Food(cookable and perishable)
-	1. Gen(Ice,honey)
-	2. Meat
-	3. Veg
-	4. Seed
-7. Meal(meatball,fried fish,etc.)
-8. Misc(toys,gems)
-9. Pipe(lowest priority,often act as pipe to connection other storage nodes.)
+3.1. ResNatu(cutgrass,log,rocks,flint,twigs,grass,bush,poop,etc.)
+3.2. ResArti(cutstone,boards,rope,etc.)
+3.3. ResHunt(beefalowool,horn,silk,spidergland,etc.)
+4. Food(cookable and perishable)
+4.1. Gen(Ice,honey)
+4.2. Meat
+4.3. Veg
+4.4. Seed
+5. Meal(meatball,fried fish,etc.)
+6. Misc(toys,gems)
+7. Pipe(lowest priority,often act as pipe to connection other storage nodes.)
 
 It build container cluster by container's category(e.g. icebox vs chest ) and distance between them.Default search distance is 10,also you can change it in config.Search action is performed recursively so if you want you can build an long distance conveyor by treasurechest.
 
@@ -35,6 +35,10 @@ Chaos boxes is big problem when play DST with friend ,especially when you have 4
 When you sort your chest or icebox, the mod search for the nearby chest and icebox within distance(default 10).Then classify stuffs by categories,e.g. resources,tools,weapons.Next merge the stackable items which can be.Finally push all of them into storage,current opened chest have highest priority so the current container will be filled first.
 
 ## Release History
+### v1.2.8 29/Jan/2016
+- Fix : Pipe label will cause game crack.
+- Fix : Add Birchnut to Seed label.
+
 ### v1.2.7 28/Jan/2016
 - Add : Support for DS version.
 
