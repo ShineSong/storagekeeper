@@ -4,7 +4,8 @@ version = "1.2.8"
 description = "v"..version.."\nA reliable keeper manages your storage clusters.You can use SignPlus to tell keeper what you want to put in this node."
 
 forumthread = "/topic/62320-mod-releasestorage-keeper"
-api_version = 10
+api_version = 6
+api_version_dst = 10
 icon_atlas = "modicon.xml"
 icon = "modicon.tex"
 restart_required = false
