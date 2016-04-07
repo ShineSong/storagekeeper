@@ -28,7 +28,24 @@ local function cloneTable(t)
   for k, v in pairs(t) do rtn[k] = v end
   return rtn
 end
-
+SC_FOODTYPE={}
+if MOD_API_VERSION == 6 then
+	print("API LEVEL",MOD_API_VERSION)
+	print("Running in DS Mode")
+	SC_FOODTYPE.VEGGIE="VEGGIE"
+	SC_FOODTYPE.MEAT="MEAT"
+	SC_FOODTYPE.SEEDS="SEEDS"
+	SC_FOODTYPE.RAW=""
+	SC_FOODTYPE.GENERIC="GENERIC"
+else
+	print("API LEVEL",MOD_API_VERSION)
+	print("Running in DST Mode")
+	SC_FOODTYPE.VEGGIE=FOODTYPE.VEGGIE
+	SC_FOODTYPE.MEAT=FOODTYPE.MEAT
+	SC_FOODTYPE.SEEDS=FOODTYPE.SEEDS
+	SC_FOODTYPE.RAW=FOODTYPE.RAW
+	SC_FOODTYPE.GENERIC=FOODTYPE.GENERIC
+end
 -- Class of StorageCluster
 local StorageCluster = Class(function(self)
 	self.managedClusters={}
@@ -42,20 +59,8 @@ local StorageCluster = Class(function(self)
 	self.DST=true
 	end)
 --constant of the class
-StorageCluster.prefabFilter={
-	treasurechest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
-	largechest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
-	cellar={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
-	dragonflychest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
-	pandoraschest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
-	skullchest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
-	minotaurchest={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
-	bluebox={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"},
-	icebox={"icebox","largeicebox","freezer","deep_freezer"},
-	largeicebox={"icebox","largeicebox","freezer","deep_freezer"},
-	freezer={"icebox","largeicebox","freezer","deep_freezer"},
-	deep_freezer={"icebox","largeicebox","freezer","deep_freezer"},
-	}
+StorageCluster.aGroupPrefabFilter={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"}
+StorageCluster.bGroupPrefabFilter={"icebox","largeicebox","freezer","deep_freezer"}
 StorageCluster.supportContainer={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox","icebox","largeicebox","freezer","deep_freezer"}
 StorageCluster.BagEnum={Gen=1,Meat=2,Veg=3,Seed=4,ResNatu=5,ResN=5,ResArti=6,ResA=6,ResHunt=7,ResH=7,Equip=8,Tool=9,Meal=10,Misc=11,Res=51,Food=52,Pipe=98,A=99}
 StorageCluster.MaxLeafBag=50
@@ -172,8 +177,16 @@ function StorageCluster:buildAdjacencyList(inst)
 	    local x,y,z = inst.Transform:GetWorldPosition()
 	    local nearby=TheSim:FindEntities(x,y,z, self.searchradius)
 	    local validNearby={}
+	    local prefabList={}
+	    if table.contains(self.aGroupPrefabFilter,inst.prefab) then
+	    	prefabList=self.aGroupPrefabFilter
+	    elseif table.contains(self.bGroupPrefabFilter,inst.prefab) then
+	    	prefabList=self.bGroupPrefabFilter
+	    else
+	    	return
+	    end
 	    for _,v in pairs(nearby) do
-	    	if table.contains(self.prefabFilter[inst.prefab],v.prefab) then
+	    	if table.contains(prefabList,v.prefab) then
 	    		table.insert(validNearby,v)
 	    	end
 	    end
@@ -315,13 +328,13 @@ function StorageCluster:itemType(inst)
 	if inst.components.edible and inst.components.perishable then
 		if table.containskey(foods,inst.prefab) then
 			return self.BagEnum.Meal
-		elseif inst.components.edible.foodtype == FOODTYPE.VEGGIE then
+		elseif inst.components.edible.foodtype == SC_FOODTYPE.VEGGIE then
 			return self.BagEnum.Veg
-		elseif inst.components.edible.foodtype == FOODTYPE.MEAT then
+		elseif inst.components.edible.foodtype == SC_FOODTYPE.MEAT then
 			return self.BagEnum.Meat
-		elseif inst.components.edible.foodtype == FOODTYPE.SEEDS or inst.components.edible.foodtype == FOODTYPE.RAW then
+		elseif inst.components.edible.foodtype == SC_FOODTYPE.SEEDS or inst.components.edible.foodtype == SC_FOODTYPE.RAW then
 			return self.BagEnum.Seed
-		elseif inst.components.edible.foodtype == FOODTYPE.GENERIC then
+		elseif inst.components.edible.foodtype == SC_FOODTYPE.GENERIC then
 			return self.BagEnum.Gen
 		else
 			return self.BagEnum.Misc
