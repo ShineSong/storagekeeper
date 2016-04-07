@@ -38,6 +38,7 @@ When you sort your chest or icebox, the mod search for the nearby chest and iceb
 ### v1.2.8 29/Jan/2016
 - Fix : Pipe label will cause game crack.
 - Fix : Add Birchnut to Seed label.
+- Fix : Mod cannot enable in DS.
 
 ### v1.2.7 28/Jan/2016
 - Add : Support for DS version.
