@@ -59,9 +59,9 @@ local StorageCluster = Class(function(self)
 	self.DST=true
 	end)
 --constant of the class
-StorageCluster.aGroupPrefabFilter={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"}
+StorageCluster.aGroupPrefabFilter={"treasurechest","largechest","cellar","storeroom","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox"}
 StorageCluster.bGroupPrefabFilter={"icebox","largeicebox","freezer","deep_freezer"}
-StorageCluster.supportContainer={"treasurechest","largechest","cellar","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox","icebox","largeicebox","freezer","deep_freezer"}
+StorageCluster.supportContainer={"treasurechest","largechest","cellar","storeroom","dragonflychest","pandoraschest","skullchest","minotaurchest","bluebox","icebox","largeicebox","freezer","deep_freezer"}
 StorageCluster.BagEnum={Gen=1,Meat=2,Veg=3,Seed=4,ResNatu=5,ResN=5,ResArti=6,ResA=6,ResHunt=7,ResH=7,Equip=8,Tool=9,Meal=10,Misc=11,Res=51,Food=52,Pipe=98,A=99}
 StorageCluster.MaxLeafBag=50
 StorageCluster.resNatural={

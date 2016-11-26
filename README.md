@@ -35,6 +35,8 @@ Chaos boxes is big problem when play DST with friend ,especially when you have 4
 When you sort your chest or icebox, the mod search for the nearby chest and icebox within distance(default 10).Then classify stuffs by categories,e.g. resources,tools,weapons.Next merge the stackable items which can be.Finally push all of them into storage,current opened chest have highest priority so the current container will be filled first.
 
 ## Release History
+### v1.2.9 7/April/2016
+- Fix : Crash problem when sort icebox in Don't Starve single player version.
 ### v1.2.8 29/Jan/2016
 - Fix : Pipe label will cause game crack.
 - Fix : Add Birchnut to Seed label.
